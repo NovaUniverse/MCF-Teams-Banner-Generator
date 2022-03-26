@@ -7,12 +7,12 @@
 
 **Step 1) Download Git Repo** 
 ```
-git clone https://github.com/JS-Quick-Pack/jsqp-app
+git clone https://github.com/NovaUniverse/MCF-Teams-Banner-Generator
 ```
 
 **Step 2) Install all required dependencies.**
 ```
-cd jsqp-app
+cd MCF-Teams-Banner-Generator
 pip install -r requirements.txt
 ```
 
