@@ -108,6 +108,9 @@ nova_logo = nova_logo.resize((300, 300))
 offset = (1620, 800)
 image_uwu.paste(nova_logo, offset, mask=nova_logo)
  
+if not "dest" in os.listdir("./"):
+    os.mkdir("./dest")
+
 # Save the UwU image file.
 image_uwu.save(f"./dest/{date} - MCF Teams.png")
 
