@@ -73,7 +73,7 @@ for player in teams_json:
 
 # Storing todays date.
 if not date_string in ["", "none", "null"]:
-    date = dateparser.parse(date_string).strftime("%d.%m.%Y")
+    date = dateparser.parse(date_string, date_formats=["%d/%m/%Y", "%Y/%m/%d"]).strftime("%d.%m.%Y")
 else:
     date = datetime.datetime.now().strftime("%d.%m.%Y")
 
