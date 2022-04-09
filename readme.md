@@ -26,4 +26,11 @@ python run.py
 #### • Step 4) DONE! The PNG should open up but it can also be found in the 'dest' folder with the following date.
 ![image](https://user-images.githubusercontent.com/66202304/160249393-a05f7ea4-dec1-4d2b-8e83-316df583e500.png)
 
+## Command Line Args
+*(Assuming your in the src directory.)*
+```
+python run.py {path to teams.json} {date: 10/04/2022} {max teams: 12} {open file: true/false}
+```
+#### To settle with default options you can just pass "none" or "null". Also we drop the final rendered images in a "dest" folder in the root directory.
+
 **© Copyright (C) 2022 Nova Universe (Under the [GPL-3.0 License](LICENSE.md))**
