@@ -142,6 +142,15 @@ for team in teams:
 print(teams_string)
 print(teams_string_2)
 
+# Place novauniverse branding.
+nova_logo = Image.open("./assets/novauniverse_logo.png", mode="r")
+nova_logo = nova_logo.resize((300, 300))
+offset = (1620, 800)
+image_uwu.paste(nova_logo, offset, mask=nova_logo)
+ 
+if not "dest" in os.listdir("./"):
+    os.mkdir("./dest")
+
 #  Place Teams Text
 if not teams_string_2 == "": size = 45
 else: size = 65
@@ -180,15 +189,6 @@ if not teams_string_2 == "":
     place_teams_text(teams_string_2, 2)
 else:
     place_teams_text(teams_string)
-
-# Place novauniverse branding.
-nova_logo = Image.open("./assets/novauniverse_logo.png", mode="r")
-nova_logo = nova_logo.resize((300, 300))
-offset = (1620, 800)
-image_uwu.paste(nova_logo, offset, mask=nova_logo)
- 
-if not "dest" in os.listdir("./"):
-    os.mkdir("./dest")
 
 # Save the UwU image file.
 image_uwu.save(f"./dest/{date} - MCF Teams.png")
