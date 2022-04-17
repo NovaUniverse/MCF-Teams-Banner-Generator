@@ -2,7 +2,7 @@
 <p align="center">
   <img src="https://user-images.githubusercontent.com/66202304/160249081-1802ff23-3d7b-4ac3-af2c-6c5728c18f6d.png" width="960" />
 
-  ## ★ A small python script we use to generate banners displaying the players participating.
+  ## ★ A small python script we use to generate banners displaying the players participating in MCF.
 </p>
 
 ## 🍭Install & Run Instructions
