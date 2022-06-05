@@ -20,7 +20,7 @@ pip install -r requirements.txt
 #### • Step 3) Run script and drag the teams.json file in the console.
 ```cmd
 cd src
-python run.py
+python old_run.py
 ```
 ![image](https://user-images.githubusercontent.com/66202304/160249424-11bc975c-6e42-43e0-8181-249f3b960f38.png)
 
