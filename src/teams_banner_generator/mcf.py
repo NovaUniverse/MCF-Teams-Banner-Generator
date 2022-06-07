@@ -9,6 +9,7 @@ from . import BannerGen, Background_Images
 
 class MCFTeamsBannerGen(BannerGen):
     def __init__(self, cli_args: List[str] = []):
+        self.date = None
         super().__init__(cli_args)
 
     def create(self):
@@ -37,13 +38,13 @@ class MCFTeamsBannerGen(BannerGen):
             except KeyError:
                 pass
 
-        # Storing todays date.
+        # Storing todays date.date
         if not self.date_string == None:
-            date = dateparser.parse(self.date_string, date_formats=["%d/%m/%Y", "%Y/%m/%d"]).strftime("%d.%m.%Y")
+            self.date = dateparser.parse(self.date_string, date_formats=["%d/%m/%Y", "%Y/%m/%d"]).strftime("%d.%m.%Y")
         else:
-            date = datetime.datetime.now().strftime("%d.%m.%Y")
+            self.date = datetime.datetime.now().strftime("%d.%m.%Y")
 
-        return self.generate(teams, date)
+        return self.generate(teams, self.date)
 
     def generate(self, teams:dict, date:str):
         """Generates the actual image. UwU"""
@@ -60,7 +61,7 @@ class MCFTeamsBannerGen(BannerGen):
 
         # Place Title Text
 
-        title_text = f"MCF Teams - {date}"
+        title_text = f"MCF Teams - {self.date}"
         title_font = ImageFont.truetype('./assets/MilkyNice_Clean.ttf', 120)
 
         title_blur_layer = Image.new('RGBA', image_uwu.size)
