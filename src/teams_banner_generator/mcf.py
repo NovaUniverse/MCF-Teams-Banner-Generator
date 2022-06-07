@@ -100,16 +100,16 @@ class MCFTeamsBannerGen(BannerGen):
                     players_string = f"{player_1} & {player_2}".center(28)
 
                 if len(teams_string.splitlines()) >= 12:
-                    teams_string_2 += f"• TEAM {team}: {players_string}\n"
+                    teams_string_2 += f"• #{team}: {players_string}\n"
                 else:
-                    teams_string += f"• TEAM {team}: {players_string}\n"
+                    teams_string += f"• #{team}: {players_string}\n"
 
             else:
                 no_players = "[Free Team]"
                 if len(teams_string.splitlines()) >= 12:
-                    teams_string_2 += f"• TEAM {team}: {no_players}\n"
+                    teams_string_2 += f"• #{team}: {no_players}\n"
                 else:
-                    teams_string += f"• TEAM {team}: {no_players}\n"
+                    teams_string += f"• #{team}: {no_players}\n"
 
         print(teams_string)
         print(teams_string_2)
@@ -130,11 +130,11 @@ class MCFTeamsBannerGen(BannerGen):
 
             if not string_num == None:
                 if string_num == 1:
-                    x_placement = 16
+                    x_placement = 9
                 if string_num == 2:
-                    x_placement = 1.035
+                    x_placement = 1.1
 
-                y_placement = 70
+                y_placement = 20
             else:
                 x_placement = 2
                 y_placement = 0
