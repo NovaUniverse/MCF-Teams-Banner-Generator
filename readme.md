@@ -8,19 +8,19 @@
 ## 🍭Install & Run Instructions
 #### • Step 1) Download Git Repo.
 ```
-git clone https://github.com/NovaUniverse/MCF-Teams-Banner-Generator
+git clone https://github.com/NovaUniverse/Teams-Banner-Generator
 ```
 
 #### • Step 2) Install all required dependencies.
 ```cmd
-cd MCF-Teams-Banner-Generator
+cd Teams-Banner-Generator
 pip install -r requirements.txt
 ```
 
 #### • Step 3) Run script and drag the teams.json file in the console.
 ```cmd
 cd src
-python run.py
+python mcf_banner.py
 ```
 ![image](https://user-images.githubusercontent.com/66202304/160249424-11bc975c-6e42-43e0-8181-249f3b960f38.png)
 
@@ -29,9 +29,11 @@ python run.py
 
 ## 💽Command Line Args
 *(Assuming your in the src directory.)*
+
+### MCF Banner
 ```
-python run.py {path to teams.json} {date: 10/04/2022} {max teams: 12} {open file: true/false}
+python mcf_banner.py {path to teams.json} {date: 10/04/2022} {max teams: 12} {don't open file: True} {save location: "./dest"}
 ```
-#### To settle with default options you can just pass "none" or "null". Also we drop the final rendered images in a "dest" folder in the root directory.
+#### To settle with default options you can just pass "None", "none" or "null". Also we drop the final rendered images in a "dest" folder in the root directory but this can be changed in the cli args.
 
 **© Copyright (C) 2022 Nova Universe (Under the [GPL-3.0 License](LICENSE.md))**
