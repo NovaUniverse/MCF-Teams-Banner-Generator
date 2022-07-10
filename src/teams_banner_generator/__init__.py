@@ -76,3 +76,4 @@ class Background_Images():
         return f"{self.bg_images_folder_dir}/background_{random.randint(1, len(os.listdir(self.bg_images_folder_dir)))}.png"
 
 from .mcf import MCFTeamsBannerGen
+from .nova_games import NovaGamesTeamsBannerGen
