@@ -3,6 +3,7 @@ devgoldyutils
 re
 beautifulsoup4
 requests
-selenium
 flask
 shutil
+twisted
+scrapy

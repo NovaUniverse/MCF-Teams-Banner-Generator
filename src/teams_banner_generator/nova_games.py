@@ -1,19 +1,44 @@
 import datetime
 import time
-from typing import Dict, List
-import json, os, sys
-import webview
+from typing import List
+import json, sys
 from PIL import Image, ImageDraw, ImageFont, ImageFilter
 
 import dateparser
 
+import scrapy
+from scrapy.crawler import CrawlerProcess, CrawlerRunner
+from twisted.internet import reactor
+
+import devgoldyutils
 import requests
 from bs4 import BeautifulSoup
 import re
-from selenium import webdriver
 from io import BytesIO
 
 from . import BannerGen, Background_Images
+
+temp = {}
+
+class TwitchPfP(scrapy.Spider, devgoldyutils.Console):
+    """
+    Scraper to get Twitch channel pfp.
+    """
+
+    name = "Twitch Channel PfP"
+    allowed_domains = ["youtube.com"]
+    start_urls = [
+            
+    ]
+
+    def __init__(self):
+        super().__init__()
+
+    def parse(self, response):
+        print(self.GREEN(f"A response from {response.url} just arrived! \n"))
+
+        pfp_url = response.css(".InjectLayout-sc-4fdua6-0.ifWpmL.tw-image.tw-image-avatar::attr(src)").get()
+        temp["twitch_pfp_url"] = pfp_url
 
 class TeamColours():
     BLACK = (0, 0, 0)
@@ -71,13 +96,6 @@ class NovaGamesTeamsBannerGen(BannerGen):
             "13" : "Pink  Platypus",
             "14" : "Yellow  Yaks"
         }
-
-        options = webdriver.ChromeOptions()
-        options.add_argument('--headless')
-        options.add_argument('--ignore-certificate-errors')
-        options.add_argument('--incognito')
-
-        self.driver = webdriver.Chrome(f"./teams_banner_generator/chromedriver_{sys.platform}.exe", chrome_options=options)
 
         super().__init__(cli_args)
 
@@ -187,15 +205,17 @@ class NovaGamesTeamsBannerGen(BannerGen):
         return channel_logo_url
 
     def get_twitch_pfp(self, channel_url:str):
-        self.driver.get(channel_url)
+        process = CrawlerRunner({
+            'USER_AGENT': 'Mozilla/5.0 (iPad; U; CPU OS 3_2_1 like Mac OS X; en-us) AppleWebKit/531.21.10 (KHTML, like Gecko) Mobile/7B405'
+        })
 
-        time.sleep(0.25)
+        TwitchPfP.start_urls = [channel_url]
 
-        page = self.driver.execute_script('return document.body.innerHTML')
+        process.crawl(TwitchPfP)
 
-        soup = BeautifulSoup(page, "html.parser")
-        channel_logo_div = soup.find_all("div", class_="Layout-sc-nxg1ff-0 hhcjeu")[0]
-        channel_logo_url:str = channel_logo_div.find_all("img", class_="InjectLayout-sc-588ddc-0 iDjrEF tw-image tw-image-avatar")[0]["src"]
+        d = process.join()
+        d.addBoth(lambda _: reactor.stop())
+        reactor.run()
 
-        channel_logo_url = channel_logo_url.replace("70x70", "600x600") # Resize
+        channel_logo_url = temp["twitch_pfp_url"].replace("150x150", "600x600") # Resize
         return channel_logo_url
