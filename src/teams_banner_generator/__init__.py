@@ -7,14 +7,15 @@ from devgoldyutils import Console
 if sys.platform == "win32": os.system("color")
 
 class BannerGen(Console):
-    def __init__(self, cli_args:List[str]=[]):
+    def __init__(self, cli_args:List[str]=[], dont_ask=False):
         self.is_none = ["", "none", "null", None]
 
         self.cli_args = cli_args
 
-        self.teams_json_file_path = self.get_arg(arg_num=1, text=self.BLUE("Drag teams.json in here and hit enter --> "), required=True)
-        self.date_string = self.get_arg(arg_num=2, text=self.PURPLE("Enter the date this event is taking place. (FORMAT: 01/04/2030) [Default: Todays Date] --> "))
-        self.max_teams = self.get_arg(arg_num=3, text=self.CLAY("Max Number of Teams [Default: 12] --> "))
+        self.teams_json_file_path = self.get_arg(arg_num=1, text=self.BLUE("Drag teams.json in here and hit enter --> "), required=True, dont_ask=dont_ask)
+        self.date_string = self.get_arg(arg_num=2, text=self.PURPLE("Enter the date this event is taking place. (FORMAT: 01/04/2030) [Default: Todays Date] --> "), dont_ask=dont_ask)
+        self.max_teams = self.get_arg(arg_num=3, text=self.CLAY("Max Number of Teams [Default: 12] --> "), dont_ask=dont_ask)
+            
         self.dont_open_file = self.get_arg(arg_num=4, dont_ask=True)
         self.save_location = self.get_arg(arg_num=5, dont_ask=True)
 
@@ -76,3 +77,4 @@ class Background_Images():
         return f"{self.bg_images_folder_dir}/background_{random.randint(1, len(os.listdir(self.bg_images_folder_dir)))}.png"
 
 from .mcf import MCFTeamsBannerGen
+from .nova_games import NovaGamesTeamsBannerGen
