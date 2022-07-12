@@ -215,7 +215,7 @@ class NovaGamesTeamsBannerGen(BannerGen):
 
         d = process.join()
         d.addBoth(lambda _: reactor.stop())
-        reactor.run()
+        reactor.run(0)
 
         channel_logo_url = temp["twitch_pfp_url"].replace("150x150", "600x600") # Resize
         return channel_logo_url

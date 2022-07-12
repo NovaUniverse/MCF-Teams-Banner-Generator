@@ -11,7 +11,8 @@ def banner_gen():
 
         if data["tournament"] in available_tournaments:
             if data["tournament"] == "NovaGames":
-                shutil.rmtree("./temp")
+                if "temp" in os.listdir("."):
+                    shutil.rmtree("./temp")
                 os.mkdir("./temp")
 
                 path_to_json_file = "./temp/teams.json"
@@ -20,7 +21,7 @@ def banner_gen():
                     json.dump(data["teams"], file)
 
                 # Hard coded 14 teams for now, since I'm lazy.
-                nova_games = NovaGamesTeamsBannerGen(cli_args=["", path_to_json_file, None, 14, "", output_folder])
+                nova_games = NovaGamesTeamsBannerGen(cli_args=["", path_to_json_file, None, data["team_count"], "", output_folder])
 
                 count = 0
                 locations = {}
