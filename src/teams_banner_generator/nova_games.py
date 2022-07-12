@@ -1,13 +1,17 @@
 import datetime
+import time
 from typing import Dict, List
 import json, os, sys
+import webview
 from PIL import Image, ImageDraw, ImageFont, ImageFilter
-import requests
 
 import dateparser
 
+import requests
 from bs4 import BeautifulSoup
+import re
 from selenium import webdriver
+from io import BytesIO
 
 from . import BannerGen, Background_Images
 
@@ -68,6 +72,13 @@ class NovaGamesTeamsBannerGen(BannerGen):
             "14" : "Yellow  Yaks"
         }
 
+        options = webdriver.ChromeOptions()
+        options.add_argument('--headless')
+        options.add_argument('--ignore-certificate-errors')
+        options.add_argument('--incognito')
+
+        self.driver = webdriver.Chrome(f"./teams_banner_generator/chromedriver_{sys.platform}.exe", chrome_options=options)
+
         super().__init__(cli_args)
 
     def create(self):
@@ -76,7 +87,7 @@ class NovaGamesTeamsBannerGen(BannerGen):
         teams_json = json.load(open(self.teams_json_file_path, mode="r"))
 
         if self.max_teams == None: 
-            max_teams = 12
+            max_teams = 14
         else: 
             max_teams = int(self.max_teams)
 
@@ -111,23 +122,32 @@ class NovaGamesTeamsBannerGen(BannerGen):
 
         # Getting and placing background
         team_template_image_path = "./assets/nova_games_assets/template_banner.png"
-        team_template_image = Image.open(team_template_image_path, mode="r")
+        team_template_image = Image.open(team_template_image_path, mode="r").convert("RGBA")
 
         team_banner_list:List[Image.Image] = []
 
         for team in teams:
             team_banner_image = Image.new(mode="RGBA", size=team_template_image.size, color=(201, 0, 52))
-            team_banner_image.paste(team_template_image)
+            
+            player_count = 0
 
             for player in teams[team]:
+                
+                # Get player channel pfp.
                 channel_url = player["channel_url"]
 
-                print(self.get_pfp(channel_url))
+                pfp_url = self.get_pfp(channel_url)
+                print(self.BLUE(f"Profile Picture URL >>> {pfp_url}"))
+                response = requests.get(pfp_url)
 
-                # Get player channel pfp.
-                #player_channel_pfp = Image.open()
+                player_channel_pfp = Image.open(BytesIO(response.content))
+                player_channel_pfp = player_channel_pfp.resize((550, 550)).convert("RGBA")
 
-                #team_banner_image.paste(player_channel_pfp)
+                team_banner_image.paste(player_channel_pfp, (275 + (740*player_count), int(team_template_image.size[1]/3 + 10)))
+                
+                player_count += 1
+
+            team_banner_image = Image.alpha_composite(team_banner_image, team_template_image)
 
             # Place Team Name
             #====================
@@ -151,19 +171,31 @@ class NovaGamesTeamsBannerGen(BannerGen):
 
     def get_pfp(self, channel_url:str):
         if "https://www.youtube.com/" in channel_url:
-            return self.get_yt_pfp(channel_url)
+            return self.get_yt_pfp(channel_url + "/about")
+
+        if "https://www.twitch.tv/" in channel_url:
+            return self.get_twitch_pfp(channel_url + "/about")
 
     def get_yt_pfp(self, channel_url:str):
-
-        options = webdriver.ChromeOptions()
-        options.add_argument('--headless')
-        browser = webdriver.Chrome(options=options, executable_path=f'./teams_banner_generator/chromedriver_{(sys.platform).lower()}.exe')
-
-        browser.get(channel_url)
-        html = browser.page_source
-        browser.quit()
-
+        html = requests.get(channel_url, cookies={"CONSENT": "YES+1"}).text
         soup = BeautifulSoup(html, "html.parser")
+        data = re.search(r"var ytInitialData = ({.*});", str(soup.prettify())).group(1)
+        json_data = json.loads(data)
 
-        pfp_image_url:str = soup.find(id="img")
-        return pfp_image_url
+        channel_logo_url:str = json_data["header"]["c4TabbedHeaderRenderer"]["avatar"]["thumbnails"][2]["url"]
+        channel_logo_url = channel_logo_url.replace("s176", "s1000") # Resize
+        return channel_logo_url
+
+    def get_twitch_pfp(self, channel_url:str):
+        self.driver.get(channel_url)
+
+        time.sleep(0.25)
+
+        page = self.driver.execute_script('return document.body.innerHTML')
+
+        soup = BeautifulSoup(page, "html.parser")
+        channel_logo_div = soup.find_all("div", class_="Layout-sc-nxg1ff-0 hhcjeu")[0]
+        channel_logo_url:str = channel_logo_div.find_all("img", class_="InjectLayout-sc-588ddc-0 iDjrEF tw-image tw-image-avatar")[0]["src"]
+
+        channel_logo_url = channel_logo_url.replace("70x70", "600x600") # Resize
+        return channel_logo_url
