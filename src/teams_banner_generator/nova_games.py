@@ -3,12 +3,13 @@ import time
 from typing import List
 import json, sys
 from PIL import Image, ImageDraw, ImageFont, ImageFilter
+from multiprocessing import Process
 
 import dateparser
 
 import scrapy
 from scrapy.crawler import CrawlerProcess, CrawlerRunner
-from twisted.internet import reactor
+#from twisted.internet import reactor
 
 import devgoldyutils
 import requests
@@ -37,8 +38,18 @@ class TwitchPfP(scrapy.Spider, devgoldyutils.Console):
     def parse(self, response):
         print(self.GREEN(f"A response from {response.url} just arrived! \n"))
 
-        pfp_url = response.css(".InjectLayout-sc-4fdua6-0.ifWpmL.tw-image.tw-image-avatar::attr(src)").get()
+        #pfp_url = response.css(".InjectLayout-sc-4fdua6-0.ifWpmL.tw-image.tw-image-avatar::attr(src)").get()
+        #pfp_url = response.css(".ScAvatar-sc-144b42z-0.jNKJtr.tw-avatar img::attr(src)").get()
+        pfp_url = response.css(".ScAvatar-sc-144b42z-0.iPkpVc.tw-avatar img::attr(src)").get()
         temp["twitch_pfp_url"] = pfp_url
+
+def crawl_twitch_pfp():
+    process = CrawlerProcess({
+        'USER_AGENT': 'Mozilla/5.0 (iPad; U; CPU OS 3_2_1 like Mac OS X; en-us) AppleWebKit/531.21.10 (KHTML, like Gecko) Mobile/7B405'
+    })
+    process.crawl(TwitchPfP)
+
+    process.start(stop_after_crawl=True)
 
 class TeamColours():
     BLACK = (0, 0, 0)
@@ -154,6 +165,7 @@ class NovaGamesTeamsBannerGen(BannerGen):
                 # Get player channel pfp.
                 channel_url = player["channel_url"]
 
+                print(self.CLAY(f"Getting {player['ign']}'s profile picture..."))
                 pfp_url = self.get_pfp(channel_url)
                 print(self.BLUE(f"Profile Picture URL >>> {pfp_url}"))
                 response = requests.get(pfp_url)
@@ -191,7 +203,7 @@ class NovaGamesTeamsBannerGen(BannerGen):
         if "https://www.youtube.com/" in channel_url:
             return self.get_yt_pfp(channel_url + "/about")
 
-        if "https://www.twitch.tv/" in channel_url:
+        if "twitch.tv/" in channel_url:
             return self.get_twitch_pfp(channel_url + "/about")
 
     def get_yt_pfp(self, channel_url:str):
@@ -205,17 +217,12 @@ class NovaGamesTeamsBannerGen(BannerGen):
         return channel_logo_url
 
     def get_twitch_pfp(self, channel_url:str):
-        process = CrawlerRunner({
-            'USER_AGENT': 'Mozilla/5.0 (iPad; U; CPU OS 3_2_1 like Mac OS X; en-us) AppleWebKit/531.21.10 (KHTML, like Gecko) Mobile/7B405'
-        })
-
         TwitchPfP.start_urls = [channel_url]
-
-        process.crawl(TwitchPfP)
-
-        d = process.join()
-        d.addBoth(lambda _: reactor.stop())
-        reactor.run(0)
+        
+        p = Process(target=crawl_twitch_pfp)
+        p.start()
+        p.join()
 
         channel_logo_url = temp["twitch_pfp_url"].replace("150x150", "600x600") # Resize
+        del temp["twitch_pfp_url"]
         return channel_logo_url
