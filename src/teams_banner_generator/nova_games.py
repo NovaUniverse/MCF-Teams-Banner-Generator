@@ -3,13 +3,15 @@ import time
 from typing import List
 import json, sys
 from PIL import Image, ImageDraw, ImageFont, ImageFilter
-from multiprocessing import Process
+from multiprocessing import Process, Queue
 
 import dateparser
 
 import scrapy
 from scrapy.crawler import CrawlerProcess, CrawlerRunner
-#from twisted.internet import reactor
+from scrapy.utils.log import configure_logging
+configure_logging()
+from twisted.internet import reactor
 
 import devgoldyutils
 import requests
@@ -27,10 +29,11 @@ class TwitchPfP(scrapy.Spider, devgoldyutils.Console):
     """
 
     name = "Twitch Channel PfP"
-    allowed_domains = ["youtube.com"]
+    allowed_domains = ["twitch.tv"]
     start_urls = [
             
     ]
+    queue:Queue = None
 
     def __init__(self):
         super().__init__()
@@ -41,15 +44,22 @@ class TwitchPfP(scrapy.Spider, devgoldyutils.Console):
         #pfp_url = response.css(".InjectLayout-sc-4fdua6-0.ifWpmL.tw-image.tw-image-avatar::attr(src)").get()
         #pfp_url = response.css(".ScAvatar-sc-144b42z-0.jNKJtr.tw-avatar img::attr(src)").get()
         pfp_url = response.css(".ScAvatar-sc-144b42z-0.iPkpVc.tw-avatar img::attr(src)").get()
-        temp["twitch_pfp_url"] = pfp_url
+        
+        self.queue.put(pfp_url)
 
-def crawl_twitch_pfp():
-    process = CrawlerProcess({
+def crawl_twitch_pfp(q:Queue, channel_url:str):
+    process = CrawlerRunner({
         'USER_AGENT': 'Mozilla/5.0 (iPad; U; CPU OS 3_2_1 like Mac OS X; en-us) AppleWebKit/531.21.10 (KHTML, like Gecko) Mobile/7B405'
     })
-    process.crawl(TwitchPfP)
 
-    process.start(stop_after_crawl=True)
+    TwitchPfP.queue = q
+    TwitchPfP.start_urls = [channel_url]
+
+    deferred = process.crawl(TwitchPfP)
+    deferred.addBoth(lambda _: reactor.stop())
+
+    reactor.run(0)
+
 
 class TeamColours():
     BLACK = (0, 0, 0)
@@ -217,12 +227,13 @@ class NovaGamesTeamsBannerGen(BannerGen):
         return channel_logo_url
 
     def get_twitch_pfp(self, channel_url:str):
-        TwitchPfP.start_urls = [channel_url]
-        
-        p = Process(target=crawl_twitch_pfp)
+        q = Queue()
+        p = Process(target=crawl_twitch_pfp, args=(q, channel_url))
         p.start()
+        twitch_pfp_url = q.get()
         p.join()
+        
 
-        channel_logo_url = temp["twitch_pfp_url"].replace("150x150", "600x600") # Resize
-        del temp["twitch_pfp_url"]
+        channel_logo_url = twitch_pfp_url.replace("150x150", "600x600") # Resize
+        #del temp["twitch_pfp_url"]
         return channel_logo_url
